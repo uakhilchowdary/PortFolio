@@ -12,18 +12,10 @@ const addClassWithReflow = (element, className) => {
     void element?.offsetWidth; // Force a reflow
 };
 
-// Get base path from meta tag
-const getBasePath = () => document.querySelector('meta[name="base-path"]')?.getAttribute('content') || '';
-
 // In Astro, page identifier is already set, but add this for compatibility
 function setPageIdentifier() {
     const path = window.location.pathname;
-    const basePath = getBasePath();
-    // Remove base path from pathname to get actual page
-    const pagePathRegex = new RegExp(`^${basePath}/?(.*)$`);
-    const match = path.match(pagePathRegex);
-    const pagePath = match ? match[1] : '';
-    const pageName = pagePath.split('/').pop().split('.')[0] || 'index';
+    const pageName = path.split('/').pop().split('.')[0] || 'index';
     if (!document.documentElement.getAttribute('data-page')) {
         document.documentElement.setAttribute('data-page', pageName);
     }
@@ -51,11 +43,12 @@ function initializeWindowControls() {
 // Updated for Astro path patterns
 function isHomePage() {
     const path = window.location.pathname;
-    const basePath = getBasePath();
-    return path === basePath || 
-           path === `${basePath}/` || 
-           path === `${basePath}/index` || 
-           path === `${basePath}/index.html`;
+    return path.endsWith('/') || 
+           path.endsWith('/index') || 
+           path.endsWith('/index.html') ||
+           path === '/' ||
+           path === '/index' ||
+           path === '/index.html';
 }
 
 function updateCopyrightYear() {
@@ -87,7 +80,6 @@ function setupPageTransitions() {
 
 // Updated for Astro paths
 function setupHomePageTransitions(portfolioWindow) {
-    const basePath = getBasePath();
     // Find all internal links on home page
     document.querySelectorAll('.horizontal-nav a, .main-nav a').forEach(link => {
         const href = link.getAttribute('href');
@@ -108,13 +100,9 @@ function setupHomePageTransitions(portfolioWindow) {
                 // Apply animation class
                 portfolioWindow.classList.add('zoom-to-fullscreen');
                 
-                // Construct the correct URL
-                const targetHref = href.startsWith('/') ? href.substring(1) : href;
-                const fullUrl = `${window.location.origin}${basePath}/${targetHref}`;
-                
                 // Navigate after animation completes
                 setTimeout(() => {
-                    window.location.href = fullUrl;
+                    window.location.href = href;
                 }, 500); // Match animation duration in CSS
             });
         }
@@ -125,11 +113,12 @@ function setupHomePageTransitions(portfolioWindow) {
 function setupContentPageTransitions(portfolioWindow) {
     portfolioWindow.classList.add('content-page-window');
     
-    const basePath = getBasePath();
     // Match home page links with Astro paths
-    const homeLinks = document.querySelectorAll(`a[href="${basePath}/"], a[href="${basePath}/index"], a[href="${basePath}/index.html"], .page-nav-button[href="${basePath}/"], .page-nav-button[href="${basePath}/index"], .page-nav-button[href="${basePath}/index.html"]`);
+    const homeLinks = document.querySelectorAll('a[href="/"], a[href="/index"], a[href="/index.html"], .page-nav-button[href="/"], .page-nav-button[href="/index"], .page-nav-button[href="/index.html"]');
     
     homeLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        
         link.addEventListener('click', function(e) {
             e.preventDefault();
             sessionStorage.setItem('navLinkClicked', 'true');
@@ -138,7 +127,7 @@ function setupContentPageTransitions(portfolioWindow) {
     });
     
     // Add flag for other internal links - adjusted for Astro paths
-    const otherLinks = document.querySelectorAll(`a[href^="${basePath}/"]:not([href="${basePath}/"]):not([href="${basePath}/index"]):not([href="${basePath}/index.html"])`);
+    const otherLinks = document.querySelectorAll('a[href^="/"]:not([href="/"]):not([href="/index"]):not([href="/index.html"])');
     
     otherLinks.forEach(link => {
         if (!link.classList.contains('page-nav-button')) {
@@ -152,11 +141,9 @@ function setupContentPageTransitions(portfolioWindow) {
 // Updated for Astro paths
 function animateToHomePage() {
     const portfolioWindow = document.querySelector('.portfolio-window');
-    const basePath = getBasePath();
-    
     if (!portfolioWindow) {
         // If can't find the window element, just navigate directly
-        window.location.href = `${basePath}/`;
+        window.location.href = '/';
         return;
     }
     
@@ -182,7 +169,7 @@ function animateToHomePage() {
     
     // 3. Wait for animation to complete before navigating
     setTimeout(() => {
-        window.location.href = `${basePath}/`;
+        window.location.href = '/';
     }, 500); // Match the animation duration in CSS
 }
 
