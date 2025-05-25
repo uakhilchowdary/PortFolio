@@ -25,18 +25,16 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
-        run: |
-          npm install
-          npm install -g astro
+        run: npm install
 
       - name: Run copy data script
         run: node copyDataFiles.js
 
       - name: Build Astro
-        run: npm run build
+        run: npx astro build
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
