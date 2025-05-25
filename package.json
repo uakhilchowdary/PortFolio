@@ -12,7 +12,7 @@
     "copy-data": "node copyDataFiles.js"
   },
   "dependencies": {
-    "astro": "^3.4.0",
+    "astro": "3.6.5",
     "marked": "^9.1.0"
   },
   "devDependencies": {
