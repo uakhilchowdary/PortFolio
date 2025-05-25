@@ -36,11 +36,17 @@ jobs:
       - name: Build Astro
         run: npx astro build
 
+      - name: List build output
+        run: |
+          echo "Build output contents:"
+          ls -la dist/
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: github-pages
-          path: ./dist
+          path: dist
+          if-no-files-found: error # This will make the action fail if no files are found
 
   deploy:
     needs: build
@@ -53,6 +59,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: github-pages
+          path: .
+
+      - name: List downloaded files
+        run: |
+          echo "Downloaded files:"
+          ls -la
 
       - name: Deploy to GitHub Pages
         id: deployment
