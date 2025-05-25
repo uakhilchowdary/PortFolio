@@ -1,32 +1,52 @@
-name: Deploy Astro Site
+name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [ main, master ]
   workflow_dispatch:
 
 permissions:
+  contents: read
   pages: write
   id-token: write
-  contents: read
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      
+      - name: Checkout your repository using git
+        uses: actions/checkout@v4
+
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: 18
           cache: 'npm'
-          
-      - run: npm ci
-      - run: npm run build
-      
-      - name: Upload Artifact
-        uses: actions/upload-pages-artifact@v2
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run copy data script
+        run: node copyDataFiles.js
+
+      - name: Build Astro
+        run: npx astro build
+
+      - name: List build output
+        run: |
+          echo "Build output contents:"
+          ls -la dist/
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
@@ -37,6 +57,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Deploy
+      - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2
+        uses: actions/deploy-pages@v4
