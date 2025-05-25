@@ -12,8 +12,15 @@ document.addEventListener('DOMContentLoaded', async function() {
             window.Components.showWindowTitleBar();
         }
         
+        // Get the base path from meta tag if available
+        const basePath = document.querySelector('meta[name="base-path"]')?.getAttribute('content') || '';
+        const origin = window.location.origin;
+        
+        // Use absolute path from root
+        const configPath = `${origin}${basePath}/data/config.json`;
+        
         // Fetch config.json data
-        const response = await fetch('./data/config.json');
+        const response = await fetch(configPath);
         if (!response.ok) {
             throw new Error(`Failed to load config.json: ${response.status}`);
         }
