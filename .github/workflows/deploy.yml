@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -18,28 +18,23 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout your repository using git
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
+        
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: 18
-          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
-
-      - name: Run copy data script
-        run: node copyDataFiles.js
+        run: npm ci
 
       - name: Build Astro
-        run: npx astro build
+        run: npm run build
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-pages-artifact@v2
         with:
-          name: github-pages
           path: ./dist
 
   deploy:
@@ -49,11 +44,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: github-pages
-
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v2
