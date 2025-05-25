@@ -1,0 +1,62 @@
+{
+  "projects": [
+    {
+      "title": "Custom Backdoor with Python",
+      "description": "Developed a Python-based backdoor and listener system. The project facilitates command execution and file transfers through a connection that bypasses typical security measures, using libraries such as socket, base64, and subprocess for network communication.",
+      "techStack": ["Python", "Socket Programming", "Network Security"],
+      "screenshot": "../assets/images/projects/project1.png",
+      "links": {
+        "Source": "#"
+      }
+    },
+    {
+      "title": "Python Keylogger",
+      "description": "Created a basic keylogger in Python that captures keystrokes and can send them via email using SMTP protocol. The project utilizes pynput.keyboard library to monitor keystrokes and smtplib for email functionality.",
+      "techStack": ["Python", "pynput", "SMTP"],
+      "links": {
+        "Source": "#"
+      }
+    },
+    {
+      "title": "Adware Analysis Project",
+      "description": "Developed an adware program in Python that processes various file types (PDF, DOCX, TXT), searches for specific strings, and interacts with MySQL databases. The program downloads and displays targeted advertisements based on file content using OpenCV library.",
+      "techStack": ["Python", "PyPDF2", "MySQL", "OpenCV"],
+      "links": {
+        "Source": "#"
+      }
+    },
+    {
+      "title": "Intrusion Detection System (IDS)",
+      "description": "Built a Python-based IDS that monitors network packets, calculates MD5 hashes of packet payloads, and compares them against a database of known malicious hashes. The system uses hashlib, os, struct, and netfilterqueue libraries to enhance network security.",
+      "techStack": ["Python", "Networking", "Hash Algorithms"],
+      "links": {
+        "Source": "#"
+      }
+    },
+    {
+      "title": "GUI Firewall",
+      "description": "Created a GUI-based stateless firewall using netfilterqueue, tkinter, socket, and iptables. This tool allows users to generate reports, block MAC or IP addresses, and manage network traffic through a user-friendly interface.",
+      "techStack": ["Python", "Tkinter", "Netfilterqueue", "Iptables"],
+      "links": {
+        "Source": "#"
+      }
+    },
+    {
+      "title": "Networking Tool Suite",
+      "description": "Developed a collection of networking tools including a packet listener and network scanner. The tools use scapy and optparse libraries to capture packets, extract HTTP request information, and perform network scanning using ARP requests.",
+      "techStack": ["Python", "Scapy", "Packet Analysis"],
+      "screenshot": "../assets/images/projects/project1.png",
+      "links": {
+        "Source": "#"
+      }
+    },
+    {
+      "title": "Trojan Analysis Forensics Project",
+      "description": "Created and analyzed a trojan file hosted on a fake gaming website. Used forensic tools like FTK Imager to create a forensic image, Autopsy for analysis, and PeStudio to assess suspicious artifacts, focusing on data recovery and malware identification.",
+      "techStack": ["Digital Forensics", "Malware Analysis", "Autopsy", "PeStudio"],
+      "links": {
+        "Source": "#"
+      }
+    }
+  ]
+} 
