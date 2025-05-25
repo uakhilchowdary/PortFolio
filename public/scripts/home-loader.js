@@ -1,176 +1,74 @@
 /**
- * Contact Form Handler using EmailJS
- * Loads EmailJS configuration and contact info from contacts.json
+ * Home Loader
+ * 
+ * A simple script that loads the name and roles from config.json
+ * and updates the homepage elements.
  */
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Get DOM elements
-    const contactForm = document.getElementById('contact-form');
-    const formStatus = document.getElementById('form-status');
-    const contactMethods = document.getElementById('contact-methods');
-    
-    // Load configuration and initialize
-    async function init() {
-        try {
-            // Show window title bar if the Components API is available
-            if (window.Components && window.Components.showWindowTitleBar) {
-                window.Components.showWindowTitleBar();
-            }
-            
-            // Get the base path from meta tag if available
-            const basePath = document.querySelector('meta[name="base-path"]')?.getAttribute('content') || '';
-            const origin = window.location.origin;
-            
-            // Use absolute path from root
-            const configPath = `${origin}${basePath}/data/contacts.json`;
-            
-            // Load config from JSON
-            const response = await fetch(configPath);
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            
-            const configData = await response.json();
-            
-            // Initialize EmailJS
-            if (configData.emailjs?.public_key) {
-                emailjs.init(configData.emailjs.public_key);
-            } else {
-                throw new Error('EmailJS public key not found in configuration');
-            }
-            
-            // Initialize contact info
-            if (configData.contact_info) {
-                // Generate HTML for contact methods
-                if (contactMethods) {
-                    let html = '';
-                    
-                    for (const [key, info] of Object.entries(configData.contact_info)) {
-                        const title = key.charAt(0).toUpperCase() + key.slice(1);
-                        
-                        html += `
-                            <div class="contact-method">
-                                <div class="method-icon ${key}-icon"></div>
-                                <div class="method-details">
-                                    <h4>${title}</h4>
-                                    <p>${info.link 
-                                        ? `<a href="${info.link}" ${key !== 'email' ? 'target="_blank"' : ''}>${info.value}</a>` 
-                                        : info.value}
-                                    </p>
-                                </div>
-                            </div>
-                        `;
-                    }
-                    
-                    contactMethods.innerHTML = html;
-                }
-            } else {
-                throw new Error('Contact information not found in configuration');
-            }
-            
-            // Set up contact form
-            if (contactForm) {
-                setupContactForm(configData.emailjs);
-            }
-            
-            return configData;
-        } catch (error) {
-            console.error('Error initializing:', error);
-            showMessage(error.message, 'error');
-            
-            if (contactMethods) {
-                contactMethods.innerHTML = `
-                    <div class="error-box">
-                        Failed to load contact information
-                    </div>
-                `;
-            }
-            return null;
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        // Show window title bar if the Components API is available
+        if (window.Components && window.Components.showWindowTitleBar) {
+            window.Components.showWindowTitleBar();
         }
-    }
-    
-    // Set up contact form handlers
-    function setupContactForm(emailjsConfig) {
-        contactForm.addEventListener('submit', function(event) {
-            event.preventDefault();
-            
-            // Show loading message
-            showMessage('Sending message...', 'info');
-            
-            // Get form data
-            const name = document.getElementById('name')?.value || '';
-            const email = document.getElementById('email')?.value || '';
-            const subject = document.getElementById('subject')?.value || '';
-            const message = document.getElementById('message')?.value || '';
-            
-            // Current time
-            const timeString = new Date().toLocaleString('en-US', {
-                weekday: 'short',
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-                hour: 'numeric',
-                minute: 'numeric',
-                hour12: true
-            });
-            
-            // Create template parameters
-            const templateParams = {
-                name,
-                email,
-                subject,
-                message,
-                time: timeString,
-                to_name: emailjsConfig.recipient_name || 'Recipient',
-                reply_to: email,
-                from_name: name
-            };
-            
-            // Send email
-            emailjs.send(emailjsConfig.service_id, emailjsConfig.template_id, templateParams)
-                .then(function(response) {
-                    console.log('Email sent successfully:', response);
-                    showMessage('Your message has been sent successfully!', 'success');
-                    contactForm.reset();
-                })
-                .catch(function(error) {
-                    console.error('Email sending failed:', error);
-                    showMessage('Failed to send message. Please try again later.', 'error');
-                });
-        });
-    }
-    
-    /**
-     * Show status message with Windows 95/98 styling
-     * @param {string} message - Message to display
-     * @param {string} type - Message type (success, error, info)
-     */
-    function showMessage(message, type) {
-        if (!formStatus) return;
         
-        // Set message and display
-        formStatus.textContent = message;
+        // Get the base path from meta tag if available
+        const basePath = document.querySelector('meta[name="base-path"]')?.getAttribute('content') || '';
+        const origin = window.location.origin;
         
-        // Reset classes and add appropriate ones
-        formStatus.className = 'form-status';
-        formStatus.classList.add(type);
-        formStatus.classList.add('form-status-visible');
+        // Use absolute path from root
+        const configPath = `${origin}${basePath}/data/config.json`;
         
-        // Handle specific message types
-        switch (type) {
-            case 'success':
-                // Auto-hide success message after 5 seconds
-                setTimeout(() => formStatus.classList.remove('form-status-visible'), 5000);
-                break;
+        // Fetch config.json data
+        const response = await fetch(configPath);
+        if (!response.ok) {
+            throw new Error(`Failed to load config.json: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Update name in the homepage heading
+        const nameHeading = document.getElementById('profile-name');
+        if (nameHeading) {
+            const cursor = nameHeading.querySelector('.cursor');
+            
+            // Save the cursor element
+            nameHeading.textContent = data.metadata.name;
+            
+            // Re-append the cursor after updating the text
+            if (cursor) {
+                nameHeading.appendChild(cursor);
+            } else {
+                // If cursor doesn't exist, create it
+                const newCursor = document.createElement('span');
+                newCursor.className = 'cursor';
+                newCursor.textContent = '_';
+                nameHeading.appendChild(newCursor);
+            }
+        }
+        
+        // Update roles rotation
+        const roles = data.metadata.roles;
+        if (roles && roles.length) {
+            const roleText = document.getElementById('role-text');
+            if (roleText) {
+                roleText.textContent = roles[0];
                 
-            case 'error':
-                // Disable form on error
-                const submitButton = contactForm?.querySelector('button[type="submit"]');
-                if (submitButton) submitButton.disabled = true;
-                break;
+                let roleIndex = 0;
+                setInterval(() => {
+                    roleIndex = (roleIndex + 1) % roles.length;
+                    roleText.textContent = roles[roleIndex];
+                }, 2000);
+            }
         }
+        
+        // Update copyright text dynamically with current year
+        const copyrightElement = document.querySelector('.copyright-footer');
+        if (copyrightElement) {
+            const currentYear = new Date().getFullYear();
+            copyrightElement.textContent = `© Copyright ${currentYear} ${data.metadata.name}`;
+        }
+    } catch (error) {
+        console.error('Failed to load data:', error);
     }
-    
-    // Initialize everything
-    init();
 }); 
