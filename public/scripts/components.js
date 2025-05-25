@@ -61,13 +61,16 @@ async function loadSiteConfig() {
 function createMainNavigation(activePage) {
     if (activePage === 'index') return;
     
+    // Get the base path from meta tag if available
+    const basePath = document.querySelector('meta[name="base-path"]')?.getAttribute('content') || '';
+    
     const navigationLinks = [
-        { name: "HOME", url: "/" },
-        { name: "ABOUT", url: "/about" },
-        { name: "EXPERIENCE", url: "/experience" },
-        { name: "PROJECTS", url: "/projects" },
-        { name: "BLOG", url: "/blogs" },
-        { name: "CONTACT", url: "/contact" }
+        { name: "HOME", url: `${basePath}/` },
+        { name: "ABOUT", url: `${basePath}/about` },
+        { name: "EXPERIENCE", url: `${basePath}/experience` },
+        { name: "PROJECTS", url: `${basePath}/projects` },
+        { name: "BLOG", url: `${basePath}/blogs` },
+        { name: "CONTACT", url: `${basePath}/contact` }
     ];
     
     const navigationHTML = `<div class="main-nav">${
@@ -136,7 +139,17 @@ async function getCurrentPageInfo() {
     try {
         const config = await loadSiteConfig();
         const path = window.location.pathname;
-        const activePage = path.endsWith('/') ? 'index' : path.split('/').pop().split('.')[0];
+        const basePath = document.querySelector('meta[name="base-path"]')?.getAttribute('content') || '';
+        
+        // Remove base path from the pathname to get the actual page path
+        const pagePathRegex = new RegExp(`^${basePath}/?(.*)$`);
+        const match = path.match(pagePathRegex);
+        const pagePath = match ? match[1] : '';
+        
+        // Determine active page
+        const activePage = !pagePath || pagePath === '' || pagePath === 'index.html' 
+            ? 'index' 
+            : pagePath.split('/').pop().split('.')[0];
         
         const pageConfig = config.pages[activePage] || config.pages['index'];
         return pageConfig;
