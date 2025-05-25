@@ -4,7 +4,12 @@
 
 class ProjectsLoader {
     constructor() {
-        this.jsonPath = '/data/projects.json';
+        // Get the base path from meta tag if available
+        const basePath = document.querySelector('meta[name="base-path"]')?.getAttribute('content') || '';
+        const origin = window.location.origin;
+        
+        // Use absolute paths from root
+        this.jsonPath = `${origin}${basePath}/data/projects.json`;
         this.projectsData = null;
     }
 
@@ -18,8 +23,8 @@ class ProjectsLoader {
                 window.Components.showWindowTitleBar();
             }
             
-            // Load projects data
-            const response = await fetch('data/projects.json');
+            // Load projects data using the full path
+            const response = await fetch(this.jsonPath);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
