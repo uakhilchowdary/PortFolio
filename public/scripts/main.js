@@ -108,9 +108,13 @@ function setupHomePageTransitions(portfolioWindow) {
                 // Apply animation class
                 portfolioWindow.classList.add('zoom-to-fullscreen');
                 
+                // Construct the correct URL
+                const targetHref = href.startsWith('/') ? href.substring(1) : href;
+                const fullUrl = `${window.location.origin}${basePath}/${targetHref}`;
+                
                 // Navigate after animation completes
                 setTimeout(() => {
-                    window.location.href = `${basePath}${href}`;
+                    window.location.href = fullUrl;
                 }, 500); // Match animation duration in CSS
             });
         }
