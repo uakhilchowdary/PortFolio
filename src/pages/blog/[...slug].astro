@@ -1,0 +1,476 @@
+---
+// Dynamic blog post page for individual articles
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import fs from 'fs';
+import path from 'path';
+import * as marked from 'marked';
+
+// Import config for SEO and navigation
+import config from '../../data/config.json';
+import blogsData from '../../data/blogs.json';
+
+// This function tells Astro which pages to generate at build time
+export function getStaticPaths() {
+  // Function to flatten the blog tree for generating paths
+  function flattenBlogTree(items, parentPath = '') {
+    let result = [];
+    
+    if (!items || !items.length) return result;
+    
+    items.forEach(item => {
+      const currentPath = parentPath ? `${parentPath}/${item.folder || item.file}` : (item.folder || item.file);
+      
+      if (item.type === 'file') {
+        // Remove .md extension for the slug
+        const fileSlug = currentPath.replace(/\.md$/, '');
+        result.push({
+          title: item.title,
+          slug: fileSlug,
+          type: 'file',
+          file: item.file,
+          path: currentPath
+        });
+      }
+      
+      if (item.type === 'folder' && item.children) {
+        // Add all children
+        result = result.concat(flattenBlogTree(item.children, currentPath));
+      }
+    });
+    
+    return result;
+  }
+
+  // Flatten the blog structure to get all blog posts
+  const flattenedBlogs = flattenBlogTree(blogsData.blogs);
+  
+  // Filter to only file types (actual blog posts)
+  const blogPosts = flattenedBlogs.filter(blog => blog.type === 'file');
+  
+  // Generate a path for each blog post
+  return blogPosts.map(blog => {
+    return {
+      params: { slug: blog.slug },
+      props: { 
+        blogData: blog,
+        allBlogPosts: blogPosts // Pass all blog posts for navigation
+      }
+    };
+  });
+}
+
+// Get the slug and pre-calculated blog data from getStaticPaths
+const { slug } = Astro.params;
+const { blogData, allBlogPosts } = Astro.props;
+
+// Variables to hold the content and status
+let content = '';
+let title = 'Blog Not Found';
+let blogFound = false;
+
+// Get blog content from markdown file if found
+if (blogData) {
+  blogFound = true;
+  title = blogData.title;
+  
+  try {
+    // Read the markdown file
+    const filePath = path.join(process.cwd(), 'src', 'blogs', blogData.path);
+    console.log('Attempting to load blog post from:', filePath);
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
+    
+    // Convert markdown to HTML using the marked package
+    content = marked.parse(fileContent);
+  } catch (error) {
+    console.error(`Error loading blog post '${blogData.path}':`, error);
+    content = '<div class="error-box">Error loading blog content. Please try again later.</div>';
+  }
+}
+
+// Find previous and next blog posts for navigation
+let prevBlog = null;
+let nextBlog = null;
+
+if (blogData && allBlogPosts) {
+  // Find current index
+  const currentIndex = allBlogPosts.findIndex(blog => blog.slug === blogData.slug);
+  
+  if (currentIndex > 0) {
+    prevBlog = allBlogPosts[currentIndex - 1];
+  }
+  
+  if (currentIndex < allBlogPosts.length - 1) {
+    nextBlog = allBlogPosts[currentIndex + 1];
+  }
+}
+
+// Helper function for base URL
+function getBaseUrl(path) {
+  // Remove leading slash if present to avoid double slashes
+  const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+  return `${import.meta.env.BASE_URL}${cleanPath}`;
+}
+
+// Use the blogs page config for consistency
+const { pageName, statusText, activePage } = config.pages.blogs;
+---
+
+<BaseLayout title={`${title} | ${config.metadata.name}`} pageName={pageName} statusText={statusText} activePage={activePage} isContentPage={true}>
+  <div class="content-area blog-page-container">
+    <!-- Main navigation styled exactly like in the screenshot -->
+    <div class="main-nav">
+      <a href={import.meta.env.BASE_URL}>HOME</a>
+      <a href={getBaseUrl('about')}>ABOUT</a>
+      <a href={getBaseUrl('experience')}>EXPERIENCE</a>
+      <a href={getBaseUrl('projects')}>PROJECTS</a>
+      <a href={getBaseUrl('blogs')} class="active-page">BLOG</a>
+      <a href={getBaseUrl('contact')}>CONTACT</a>
+    </div>
+    
+    <div class="section-header">
+      <h2>{blogFound ? title : 'Blog Post Not Found'}</h2>
+    </div>
+    
+    <!-- Error message placeholder -->
+    <div id="error-message"></div>
+
+    <div class="blog-container">
+      <!-- Toggle button moved out of both sidebar and main content -->
+      <button class="sidebar-toggle" aria-label="Toggle sidebar" title="Toggle sidebar visibility"></button>
+      
+      <div class="blog-sidebar">
+        <div class="sidebar-header">
+          <span class="sidebar-title">Content</span>
+        </div>
+        <div class="blog-tree">
+          <!-- Blog tree will be dynamically generated -->
+          <div class="loading-indicator">Loading blog structure...</div>
+        </div>
+      </div>
+      
+      <div class="blog-main">
+        <div class="blog-content">
+          {
+            blogFound ? (
+              <div class="blog-post-content" set:html={content} />
+            ) : (
+              <div class="blog-error">
+                <h3>Blog Post Not Found</h3>
+                <p>Sorry, the blog post you're looking for does not exist or has been moved.</p>
+                <p><a href={getBaseUrl('blogs')}>Return to blogs page</a></p>
+              </div>
+            )
+          }
+          
+          <!-- Navigation buttons for blog posts -->
+          <div class="blog-navigation">
+            <div class="blog-nav-buttons">
+              {prevBlog ? (
+                <a href={getBaseUrl(`blog/${prevBlog.slug}`)} class="nav-button prev-button" data-nav="prev">
+                  Previous
+                </a>
+              ) : (
+                <span class="nav-button-placeholder"></span>
+              )}
+              
+              {nextBlog ? (
+                <a href={getBaseUrl(`blog/${nextBlog.slug}`)} class="nav-button next-button" data-nav="next">
+                  Next
+                </a>
+              ) : (
+                <span class="nav-button-placeholder"></span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // Set up sidebar toggle behavior and highlight current post
+  document.addEventListener('DOMContentLoaded', async function() {
+    try {
+      // Show window title bar if Components API is available
+      if (window.Components && window.Components.showWindowTitleBar) {
+        window.Components.showWindowTitleBar();
+      }
+      
+      // Set up sidebar toggle
+      const sidebarToggle = document.querySelector('.sidebar-toggle');
+      const blogContainer = document.querySelector('.blog-container');
+      
+      if (sidebarToggle && blogContainer) {
+        // Check for first visit animation
+        if (localStorage.getItem('blog_visited') !== 'true') {
+          sidebarToggle.classList.add('first-visit');
+          localStorage.setItem('blog_visited', 'true');
+        }
+        
+        // For individual blog posts, we want the sidebar expanded by default
+        // This is different from the blogs home page where sidebar is collapsed by default
+        if (!localStorage.getItem('blog_post_sidebar_state')) {
+          localStorage.setItem('blog_post_sidebar_state', 'expanded');
+        } else {
+          // Restore sidebar state for blog posts
+          const sidebarState = localStorage.getItem('blog_post_sidebar_state');
+          if (sidebarState === 'collapsed') {
+            blogContainer.classList.add('sidebar-collapsed');
+            sidebarToggle.classList.add('collapsed');
+          } else {
+            // Make sure sidebar is expanded by removing any collapsed classes
+            blogContainer.classList.remove('sidebar-collapsed');
+            sidebarToggle.classList.remove('collapsed');
+          }
+        }
+        
+        sidebarToggle.addEventListener('click', () => {
+          blogContainer.classList.toggle('sidebar-collapsed');
+          sidebarToggle.classList.toggle('collapsed');
+          
+          // Update sidebar state in localStorage for blog posts
+          const isCollapsed = blogContainer.classList.contains('sidebar-collapsed');
+          localStorage.setItem('blog_post_sidebar_state', isCollapsed ? 'collapsed' : 'expanded');
+        });
+      }
+      
+      // Initialize the BlogLoader for sidebar navigation
+      if (window.BlogLoader) {
+        // Get the current path from the URL
+        const currentPath = window.location.pathname;
+        const slug = currentPath.replace('/blog/', '');
+        
+        // Initialize BlogLoader with the current slug for highlighting
+        window.BlogLoader.init({
+          blogDataUrl: '/data/blogs.json',
+          blogTreeContainer: '.blog-tree',
+          sidebarToggle: '.sidebar-toggle',
+          markdownBasePath: '/blogs/',
+          // Custom click handler for tree items to use our pre-rendered pages
+          onItemClick: function(item, event) {
+            if (event) event.preventDefault();
+            
+            if (item && item.type === 'file') {
+              // Build the slug path
+              let slug = item.path.replace(/\.md$/, '');
+              
+              // Navigate to the pre-rendered page
+              window.location.href = `/blog/${slug}`;
+              return true;
+            }
+            return false;
+          }
+        });
+        
+        // Highlight the current blog post in the sidebar
+        setTimeout(() => {
+          // Find and select the current blog post in the sidebar after the tree is built
+          const fileLinks = document.querySelectorAll('.blog-tree-file .file-link');
+          fileLinks.forEach(link => {
+            const linkHref = link.getAttribute('href');
+            if (linkHref && linkHref === `/blog/${slug}`) {
+              // Add active class to highlight
+              link.closest('.blog-tree-file').classList.add('active');
+              
+              // Expand parent folders
+              let parent = link.closest('.blog-tree-file').parentElement;
+              while (parent) {
+                if (parent.classList.contains('blog-tree-folder')) {
+                  parent.classList.add('expanded');
+                }
+                parent = parent.parentElement;
+              }
+              
+              // Scroll to the active item
+              setTimeout(() => {
+                link.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }, 300);
+            }
+          });
+        }, 500);
+      }
+    } catch (error) {
+      console.error('Error initializing blog interface:', error);
+      const errorContainer = document.getElementById('error-message');
+      if (errorContainer) {
+        errorContainer.innerHTML = `
+          <div class="error-box">
+            Failed to initialize blog interface: ${error.message}
+          </div>
+        `;
+      }
+    }
+  });
+</script>
+
+<style>
+  /* Featured posts styles - keeping consistent with blogs.astro */
+  .featured-posts {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+  }
+  
+  .featured-post {
+    padding: var(--spacing-md);
+    background-color: var(--surface-secondary);
+    border: var(--border-field);
+  }
+  
+  .featured-post h3 {
+    margin-top: 0;
+    margin-bottom: var(--spacing-sm);
+    font-family: MillenniumBold, serif;
+  }
+  
+  .post-link {
+    color: var(--text-link);
+    text-decoration: underline;
+    font-family: MSSerif, serif;
+  }
+  
+  /* Blog welcome screen styles */
+  .blog-welcome {
+    padding: var(--spacing-lg);
+  }
+  
+  .blog-welcome h1 {
+    margin-bottom: var(--spacing-md);
+    font-family: MillenniumBold, serif;
+  }
+  
+  /* Blog post specific styles - kept for content formatting */
+  .blog-post-content {
+    font-family: MSSerif, serif;
+    line-height: 1.5;
+    color: var(--text-color);
+    padding: var(--spacing-lg);
+  }
+  
+  .blog-post-content h1 {
+    font-size: 1.8em;
+    margin-bottom: 1em;
+    font-family: MillenniumBold, serif;
+  }
+  
+  .blog-post-content h2 {
+    font-size: 1.5em;
+    margin-top: 1.5em;
+    margin-bottom: 0.75em;
+    font-family: MillenniumBold, serif;
+  }
+  
+  .blog-post-content h3 {
+    font-size: 1.2em;
+    margin-top: 1.2em;
+    margin-bottom: 0.6em;
+  }
+  
+  .blog-post-content p {
+    margin-bottom: 1em;
+  }
+  
+  .blog-post-content ul, .blog-post-content ol {
+    margin-bottom: 1em;
+    padding-left: 2em;
+  }
+  
+  .blog-post-content li {
+    margin-bottom: 0.5em;
+  }
+  
+  .blog-post-content img {
+    max-width: 100%;
+    border: 1px solid var(--button-shadow);
+    padding: 2px;
+    background-color: var(--surface);
+  }
+  
+  .blog-post-content a {
+    color: var(--text-link);
+    text-decoration: underline;
+  }
+  
+  .blog-post-content code {
+    font-family: monospace;
+    background-color: var(--surface-secondary);
+    padding: 2px 4px;
+    border: 1px solid var(--button-shadow);
+  }
+  
+  .blog-post-content pre {
+    background-color: var(--surface-secondary);
+    padding: 1em;
+    overflow-x: auto;
+    border: 1px solid var(--button-shadow);
+    margin-bottom: 1em;
+  }
+  
+  .blog-post-content blockquote {
+    border-left: 4px solid var(--button-shadow);
+    padding-left: 1em;
+    margin-left: 0;
+    margin-bottom: 1em;
+    font-style: italic;
+  }
+  
+  .blog-error {
+    text-align: center;
+    padding: 2em;
+  }
+  
+  /* Blog navigation buttons */
+  .blog-navigation {
+    display: block;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid var(--button-shadow);
+  }
+  
+  .blog-nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 20px;
+  }
+  
+  .nav-button {
+    display: inline-block;
+    padding: 6px 20px;
+    background-color: var(--surface);
+    border-left: 2px solid #fff;
+    border-top: 2px solid #fff;
+    border-right: 2px solid #848484;
+    border-bottom: 2px solid #848484;
+    color: var(--text-color);
+    text-decoration: none;
+    font-family: MSSerif, serif;
+    font-size: 14px;
+    text-align: center;
+    min-width: 120px;
+    cursor: pointer;
+  }
+  
+  .nav-button:hover {
+    background-color: var(--surface-hover);
+  }
+  
+  .nav-button:active {
+    border-left: 2px solid #848484;
+    border-top: 2px solid #848484;
+    border-right: 2px solid #fff;
+    border-bottom: 2px solid #fff;
+  }
+  
+  .nav-button-placeholder {
+    display: inline-block;
+    min-width: 120px;
+  }
+  
+  /* Active tree item */
+  :global(.blog-tree-file.active .file-link) {
+    background-color: var(--selection-color);
+    font-weight: bold;
+  }
+</style> 

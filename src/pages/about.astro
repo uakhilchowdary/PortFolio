@@ -1,0 +1,107 @@
+---
+// About page for Windows 95/98 portfolio
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+// Import config data for better SEO
+import config from '../data/config.json';
+
+const { pageName, statusText, activePage } = config.pages.about;
+---
+
+<BaseLayout title={pageName} pageName={pageName} statusText={statusText} activePage={activePage} isContentPage={true}>
+  <div class="content-area">
+    <div class="section-header">
+      <h2>About Me</h2>
+    </div>
+    
+    <!-- Error message placeholder -->
+    <div id="error-message"></div>
+    
+    <!-- About page sections -->
+    <div class="about-grid">
+      <div class="profile-picture-container">
+        <!-- Profile picture will be loaded by about-loader.js -->
+        <div class="loading-indicator">Loading profile...</div>
+      </div>
+      
+      <div class="about-text-container">
+        <div id="about-text">
+          <!-- About text will be loaded by about-loader.js -->
+          <div class="loading-indicator">Loading about me information...</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="section-header">
+      <h2>Education</h2>
+    </div>
+    <div id="education-container" class="education-container">
+      <!-- Education will be loaded by about-loader.js -->
+      <div class="loading-indicator">Loading education information...</div>
+    </div>
+    
+    <div class="section-header">
+      <h2>Certifications</h2>
+    </div>
+    <div id="certifications-container" class="certifications-container">
+      <!-- Certifications will be loaded by about-loader.js -->
+      <div class="loading-indicator">Loading certification information...</div>
+    </div>
+    
+    <div class="section-header">
+      <h2>Skills</h2>
+    </div>
+    <div id="skills-container" class="skills-container">
+      <!-- Skills will be loaded by about-loader.js -->
+      <div class="loading-indicator">Loading skills information...</div>
+    </div>
+    
+    <div class="page-navigation">
+      <a href="/" class="page-nav-button">« Home</a>
+      <a href="/experience" class="page-nav-button">Experience »</a>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // The ProfileLoader class will handle all the data loading and rendering
+    // It's already defined in about-loader.js which is included in BaseLayout
+  });
+</script>
+
+<style>
+  /* Any page-specific styles can go here */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: var(--spacing-xl);
+    margin-bottom: var(--spacing-xl);
+  }
+  
+  @media (max-width: 768px) {
+    .about-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  .profile-picture-container {
+    width: 180px;
+    height: 180px;
+    box-shadow: var(--border-field);
+    background-color: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .about-text-container {
+    padding: var(--spacing-lg);
+    border: var(--border-field);
+    background-color: var(--surface-secondary);
+  }
+  
+  #about-text p {
+    margin-bottom: var(--spacing-md);
+  }
+</style> 

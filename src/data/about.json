@@ -1,0 +1,77 @@
+{
+  "profile": {
+    "picture": "../assets/images/profile.png",
+    "resume": "../assets/resume/Resume.pdf"
+  },
+  "about": {
+    "summary": "Results-driven and detail-oriented Cyber Security specialist with a strong academic background in network security, vulnerability assessment, and incident response.",
+    "specialization": "I specialize in penetration testing, network analysis, and creating secure systems. My technical expertise includes Python programming, Linux environments, and various cybersecurity tools and frameworks.",
+    "portfolio_description": "This portfolio site is designed to showcase my cybersecurity projects and experience, reflecting my commitment to protecting digital assets and identifying security threats.",
+    "journey": "My journey in cybersecurity is driven by a passion for protecting digital assets and implementing robust security measures. I continuously seek opportunities to apply my skills in identifying and mitigating security vulnerabilities."
+  },
+  "education": [
+    {
+      "degree": "B.Tech in CSE (Cyber Security)",
+      "institution": "Kalasalingam Academy of Research and Education",
+      "from": 2020,
+      "to": "2024",
+      "description": "GPA of 8.49"
+    }
+  ],
+  "certifications": [
+    {
+      "title": "IBM Security Analyst",
+      "issued": "2023",
+      "expires": "No Expiration",
+      "link": "#"
+    },
+    {
+      "title": "Google IT Support Specialization",
+      "issued": "2022",
+      "expires": "No Expiration",
+      "link": "#"
+    },
+    {
+      "title": "Ethical Hacking and Python Programming",
+      "issued": "2022",
+      "expires": "No Expiration",
+      "link": "#"
+    },
+    {
+      "title": "IT Security: Defense against the digital dark arts",
+      "issued": "2021",
+      "expires": "No Expiration",
+      "link": "#"
+    },
+    {
+      "title": "Cybersecurity and Ethical Hacking",
+      "issued": "2021",
+      "expires": "No Expiration",
+      "link": "#"
+    }
+  ],
+  "skills": {
+    "technical": [
+      "Java",
+      "Html",
+      "JavaScript",
+      "Python",
+      "Linux",
+      "Penetration Testing",
+      "Web Application Security"
+    ],
+    "tools": [
+      "Burpsuite",
+      "MSFVenom",
+      "Metasploit Framework",
+      "Nmap",
+      "Gobuster",
+      "SQLMap"
+    ],
+    "soft_skills": [
+      "Problem Solving",
+      "Analytical Thinking",
+      "Continuous Learning"    
+    ]
+  }
+} 

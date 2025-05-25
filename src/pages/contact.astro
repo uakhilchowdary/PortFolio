@@ -1,0 +1,225 @@
+---
+// Contact page for Windows 95/98 portfolio
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+// Import data for better SEO
+import config from '../data/config.json';
+
+const { pageName, statusText, activePage } = config.pages.contact;
+---
+
+<BaseLayout title={pageName} pageName={pageName} statusText={statusText} activePage={activePage} isContentPage={true}>
+  <div class="content-area">
+    <div class="section-header">
+      <h2>Get In Touch</h2>
+    </div>
+    
+    <!-- Error message placeholder -->
+    <div id="error-message"></div>
+    
+    <div class="contact-layout">
+      <div class="contact-info">
+        <h3>Contact Information</h3>
+        <!-- This div will be populated with contact methods from contacts.json -->
+        <div id="contact-methods" class="contact-methods">
+          <p>Loading contact information...</p>
+        </div>
+      </div>
+      
+      <div class="contact-form-container">
+        <h3>Send a Message</h3>
+        <form id="contact-form" class="contact-form">
+          <div class="form-field">
+            <label for="name">Your Name</label>
+            <input type="text" id="name" name="name" class="form-input" placeholder="Enter your name" required>
+          </div>
+          
+          <div class="form-field">
+            <label for="email">Your Email</label>
+            <input type="email" id="email" name="email" class="form-input" placeholder="Enter your email" required>
+          </div>
+          
+          <div class="form-field">
+            <label for="subject">Subject</label>
+            <input type="text" id="subject" name="subject" class="form-input" placeholder="Enter the subject" required>
+          </div>
+          
+          <div class="form-field">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" class="form-textarea" rows="5" placeholder="Type your message here" required></textarea>
+          </div>
+          
+          <div class="form-buttons">
+            <button type="submit" class="form-submit">Send Message</button>
+            <button type="reset" class="form-reset">Clear Form</button>
+          </div>
+          
+          <!-- Form status message container -->
+          <div id="form-status" class="form-status"></div>
+          
+          <!-- Small note about email handling -->
+          <div class="contact-form-note">
+            This contact form is powered by EmailJS. No server-side code required.
+          </div>
+        </form>
+      </div>
+    </div>
+    
+    <div class="page-navigation">
+      <a href="/blogs" class="page-nav-button">« Blogs</a>
+      <a href="/" class="page-nav-button">Home</a>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  /* Contact page specific styles - matching original */
+  .contact-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-xl);
+    margin-bottom: var(--spacing-xl);
+  }
+  
+  .contact-methods {
+    margin-top: var(--spacing-lg);
+  }
+  
+  .contact-method {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+  }
+  
+  .method-icon {
+    width: 40px;
+    height: 40px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    margin-right: var(--spacing-sm);
+    flex-shrink: 0;
+  }
+  
+  .github-icon {
+    background-image: url('/assets/icons/contact_github.png');
+  }
+  
+  .email-icon, .gmail-icon {
+    background-image: url('/assets/icons/contact_gmail.png');
+  }
+  
+  .linkedin-icon {
+    background-image: url('/assets/icons/contact_linkedin.png');
+  }
+  
+  .location-icon, .address-icon {
+    background-image: url('/assets/icons/contact_location.png');
+  }
+  
+  .method-details h4 {
+    margin-bottom: 5px;
+  }
+  
+  .method-details a {
+    color: var(--text-link);
+    text-decoration: underline;
+    font-family: Millennium, 'Times New Roman', Times, serif;
+  }
+  
+  .contact-form {
+    margin-top: var(--spacing-lg);
+  }
+  
+  .form-field {
+    margin-bottom: var(--spacing-sm);
+  }
+  
+  .form-field label {
+    display: block;
+    margin-bottom: 5px;
+    font-family: MillenniumBold, 'Times New Roman', Times, serif;
+    font-size: var(--font-size-xs);
+    color: var(--text-color);
+  }
+  
+  .form-input, .form-textarea {
+    width: 100%;
+    padding: var(--spacing-sm);
+    border: var(--border-field);
+    background-color: white; /* Always use white background */
+    color: black !important; /* Always use black text color, with !important to override any theme */
+    font-family: MSSerif, serif;
+    font-size: var(--font-size-xs);
+  }
+  
+  /* Make placeholders dark gray for better visibility on white background */
+  .form-input::placeholder, .form-textarea::placeholder {
+    color: #555 !important;
+    opacity: 1;
+  }
+  
+  .form-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: var(--spacing-lg);
+  }
+  
+  .form-submit, .form-reset {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: none;
+    box-shadow: var(--border-raised-outer), var(--border-raised-inner);
+    background-color: var(--surface);
+    color: var(--text-color);
+    font-family: MSSerif, serif;
+    cursor: pointer;
+    font-size: var(--font-size-xs);
+  }
+  
+  .form-submit:active, .form-reset:active {
+    box-shadow: var(--border-field);
+  }
+  
+  /* Form status styles */
+  .form-status {
+    padding: var(--spacing-sm);
+    margin-top: var(--spacing-sm);
+    font-family: MSSerif, serif;
+    font-size: var(--font-size-xs);
+    box-sizing: border-box;
+    border: 2px solid;
+    background-color: var(--surface);
+    color: var(--text-color);
+    border-color: var(--button-highlight) var(--button-shadow) var(--button-shadow) var(--button-highlight);
+    display: none;
+  }
+  
+  .form-status.success {
+    background-image: url('/assets/icons/info.png');
+    background-repeat: no-repeat;
+    background-position: 10px center;
+    background-size: 20px;
+    padding-left: 40px;
+  }
+  
+  .form-status.error {
+    background-image: url('/assets/icons/error.png');
+    background-repeat: no-repeat;
+    background-position: 10px center;
+    background-size: 20px;
+    padding-left: 40px;
+  }
+  
+  .contact-form-note {
+    margin-top: var(--spacing-sm); 
+    font-size: 11px; 
+    color: var(--text-color-secondary); 
+    font-family: MSSerif, serif;
+  }
+  
+  @media (max-width: 768px) {
+    .contact-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+</style> 

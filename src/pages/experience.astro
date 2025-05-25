@@ -1,0 +1,145 @@
+---
+// Experience page for Windows 95/98 portfolio
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+// Import config data for better SEO
+import config from '../data/config.json';
+
+const { pageName, statusText, activePage } = config.pages.experience;
+---
+
+<BaseLayout title={pageName} pageName={pageName} statusText={statusText} activePage={activePage} isContentPage={true}>
+  <div class="content-area">
+    <div class="section-header">
+      <h2>Professional Experience</h2>
+    </div>
+    
+    <!-- Error message placeholder -->
+    <div id="error-message"></div>
+    
+    <!-- Experience section containers -->
+    <div id="professional-experience" class="experience-list">
+      <p>Loading professional experience data...</p>
+    </div>
+    
+    <div class="section-header">
+      <h2>Internships</h2>
+    </div>
+    <div id="internships" class="experience-list">
+      <p>Loading internship data...</p>
+    </div>
+    
+    <div class="section-header">
+      <h2>Achievements</h2>
+    </div>
+    <div id="achievements" class="achievement-list">
+      <p>Loading achievements data...</p>
+    </div>
+
+    <div class="page-navigation">
+      <a href="/about" class="page-nav-button">« About</a>
+      <a href="/projects" class="page-nav-button">Projects »</a>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  /* Experience page specific styles */
+  .experience-list {
+    margin-bottom: var(--spacing-xl);
+  }
+  
+  .experience-item {
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+    background-color: var(--surface-secondary);
+    border: var(--border-field);
+  }
+  
+  .exp-header {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: var(--spacing-md);
+  }
+  
+  .exp-header h3 {
+    margin: 0;
+    margin-bottom: var(--spacing-xs);
+  }
+  
+  .company-date {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .company-date h4 {
+    margin: 0;
+    font-size: var(--font-size-sm);
+  }
+  
+  .date {
+    font-size: var(--font-size-xs);
+    color: var(--text-color-secondary);
+  }
+  
+  .exp-content ul {
+    margin-top: var(--spacing-md);
+    padding-left: var(--spacing-xl);
+  }
+  
+  .exp-content li {
+    margin-bottom: var(--spacing-sm);
+  }
+  
+  /* Achievement styles */
+  .achievement-list {
+    margin-bottom: var(--spacing-xl);
+  }
+  
+  .achievement-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-sm);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px dashed var(--button-shadow);
+  }
+  
+  .achievement-item:last-child {
+    border-bottom: none;
+  }
+  
+  .achievement-badge {
+    width: 50px;
+    height: 50px;
+    background-color: var(--title-bar-bg);
+    margin-right: var(--spacing-sm);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-family: MSSerif;
+    font-weight: bold;
+  }
+  
+  .achievement-details h4 {
+    margin-bottom: 5px;
+  }
+  
+  .achievement-details p {
+    margin: 0;
+    font-size: var(--font-size-xs);
+  }
+  
+  @media (max-width: 768px) {
+    .company-date {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .date {
+      margin-top: var(--spacing-xs);
+    }
+  }
+</style> 

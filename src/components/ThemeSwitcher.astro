@@ -1,0 +1,126 @@
+---
+// Theme Switcher component that replicates the original functionality
+---
+
+<div class="theme-switch-wrapper">
+  <label class="theme-switch" for="theme-checkbox" title="Toggle Theme">
+    <input type="checkbox" id="theme-checkbox" />
+  </label>
+  <span class="theme-switch-label" id="theme-status">Light</span>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const themeCheckbox = document.getElementById('theme-checkbox');
+    const themeLabel = document.getElementById('theme-status');
+    
+    if (!themeCheckbox || !themeLabel) return;
+    
+    // Set initial checkbox state based on current theme
+    const isDarkTheme = document.documentElement.classList.contains('dark-theme');
+    themeCheckbox.checked = isDarkTheme;
+    themeLabel.textContent = isDarkTheme ? 'Dark' : 'Light';
+    
+    // Add first-visit class if it's the user's first visit (for animation)
+    if (localStorage.getItem('theme-visited') !== 'true') {
+      document.querySelector('.theme-switch')?.classList.add('first-visit');
+      localStorage.setItem('theme-visited', 'true');
+    }
+    
+    // Handle theme switch change
+    themeCheckbox.addEventListener('change', function() {
+      const darkMode = this.checked;
+      
+      // Update theme class on root element
+      if (darkMode) {
+        document.documentElement.classList.add('dark-theme');
+      } else {
+        document.documentElement.classList.remove('dark-theme');
+      }
+      
+      // Update label text
+      themeLabel.textContent = darkMode ? 'Dark' : 'Light';
+      
+      // Store preference
+      localStorage.setItem('theme', darkMode ? 'dark' : 'light');
+    });
+  });
+</script>
+
+<style>
+  /* Ensure theme switcher styles are included inline for immediate appearance */
+  .theme-switch-wrapper {
+    display: flex;
+    align-items: center;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 999;
+    background: var(--surface);
+    padding: 6px 10px;
+    border-radius: 15px;
+    box-shadow: var(--border-raised-outer), var(--border-raised-inner);
+  }
+  
+  .theme-switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 20px;
+    background: var(--text-color-secondary);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-right: 8px;
+    box-shadow: var(--border-field);
+  }
+  
+  .theme-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  .theme-switch::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--button-face);
+    transition: all 0.3s;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+  }
+  
+  input:checked + .theme-switch::after {
+    transform: translateX(20px);
+    background: var(--button-face);
+  }
+  
+  @keyframes circleAttention {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+  }
+  
+  .theme-switch.first-visit::after {
+    animation: circleAttention 1s ease-in-out 3;
+  }
+  
+  /* Dark theme specific overrides */
+  html.dark-theme .theme-switch {
+    background: var(--text-color-secondary);
+  }
+  
+  html.dark-theme .theme-switch::after {
+    background: var(--button-face);
+  }
+  
+  .theme-switch-label {
+    font-size: 14px;
+    color: var(--text-color);
+    user-select: none;
+    font-family: 'MSSerif', serif;
+  }
+</style> 

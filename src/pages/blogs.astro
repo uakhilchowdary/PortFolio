@@ -1,0 +1,496 @@
+---
+// Blogs page for Windows 95/98 portfolio
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+// Import config and blogs data from src/data for better SEO
+import config from '../data/config.json';
+import blogsData from '../data/blogs.json';
+
+const { pageName, statusText, activePage } = config.pages.blogs;
+const { blogs } = blogsData;
+
+// Function to flatten the blog tree for featured posts and random selection
+function flattenBlogTree(items, parentPath = '') {
+  let result = [];
+  
+  if (!items || !items.length) return result;
+  
+  items.forEach(item => {
+    const currentPath = parentPath ? `${parentPath}/${item.folder || item.file}` : (item.folder || item.file);
+    
+    if (item.type === 'file') {
+      // Remove .md extension for the slug
+      const fileSlug = currentPath.replace(/\.md$/, '');
+      result.push({
+        title: item.title,
+        slug: fileSlug,
+        type: 'file',
+        file: item.file,
+        path: currentPath,
+        featured: item.featured || false
+      });
+    }
+    
+    if (item.type === 'folder' && item.children) {
+      // Add all children
+      result = result.concat(flattenBlogTree(item.children, currentPath));
+    }
+  });
+  
+  return result;
+}
+
+// Get all blog posts flattened
+const allBlogPosts = flattenBlogTree(blogs);
+
+// Filter to just get the actual blog posts (not folders)
+const blogPosts = allBlogPosts.filter(blog => blog.type === 'file');
+
+// Get featured posts
+const featuredPosts = blogPosts.filter(post => post.featured === true);
+
+// Function to generate correct path with base URL
+function getBaseUrl(path) {
+  // Remove leading slash if present to avoid double slashes
+  const cleanPath = path.startsWith('/') ? path.substring(1) : path;
+  return `${import.meta.env.BASE_URL}${cleanPath}`;
+}
+
+// Helper function to recursively get folder content
+// We'll use Astro components directly instead of string templates
+---
+
+<BaseLayout title={pageName} pageName={pageName} statusText={statusText} activePage={activePage} isContentPage={true}>
+  <div class="content-area blog-page-container">
+    <div class="section-header">
+      <h2>Blogs</h2>
+    </div>
+    
+    <!-- Error message placeholder -->
+    <div id="error-message"></div>
+
+    <div class="blog-container sidebar-collapsed">
+      <!-- Toggle button moved out of both sidebar and main content -->
+      <button class="sidebar-toggle collapsed" aria-label="Toggle sidebar" title="Toggle sidebar visibility"></button>
+      
+      <div class="blog-sidebar">
+        <div class="sidebar-header">
+          <span class="sidebar-title">Content</span>
+        </div>
+        <div class="blog-tree">
+          <!-- Blog tree will be dynamically generated -->
+          <div class="loading-indicator">Loading blog structure...</div>
+        </div>
+      </div>
+      
+      <div class="blog-main">
+        <div class="blog-content">
+          <!-- Enhanced blog welcome screen -->
+          <div class="blog-welcome">
+            <h1>Welcome to My Blog</h1>
+            <p>Dive into my cybersecurity insights, vulnerability analyses, and tech explorations in this blog.</p>
+            
+            {featuredPosts.length > 0 && (
+              <div class="featured-section">
+                <h2 class="section-title">Featured Posts</h2>
+                <div class="featured-posts">
+                  {featuredPosts.map(post => (
+                    <div class="featured-post">
+                      <h3>{post.title}</h3>
+                      <p>
+                        <a href={getBaseUrl(`blog/${post.slug}`)} class="post-link" data-slug={post.slug}>Read post »</a>
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            <!-- Categories section -->
+            <div class="categories-section">
+              <h2 class="section-title">Browse by Category</h2>
+              
+              <div class="category-cards">
+                {blogs.map(category => (
+                  <div class="category-card">
+                    <div class="category-header">
+                      <span class="folder-icon"></span>
+                      <h3 class="category-title">{category.title}</h3>
+                    </div>
+                    
+                    <div class="category-content">
+                      {category.type === 'folder' ? (
+                        <ul class="category-items">
+                          {category.children && category.children.map(item => (
+                            <>
+                              {item.type === 'file' ? (
+                                <li class="folder-item folder-file level-0">
+                                  <a href={getBaseUrl(`blog/${category.folder ? `${category.folder}/` : ''}${item.file.replace(/\.md$/, '')}`)} class="folder-file-link">
+                                    <span class="file-icon"></span>
+                                    <span class="file-name">{item.title}</span>
+                                  </a>
+                                </li>
+                              ) : (
+                                <li class="folder-item folder-category level-0">
+                                  <div class="folder-header">
+                                    <span class="folder-icon"></span>
+                                    <span class="folder-name">{item.title}</span>
+                                  </div>
+                                  <ul class="category-items">
+                                    {item.children && item.children.map(subitem => (
+                                      <>
+                                        {subitem.type === 'file' ? (
+                                          <li class="folder-item folder-file level-1">
+                                            <a href={getBaseUrl(`blog/${category.folder ? `${category.folder}/` : ''}${item.folder}/${subitem.file.replace(/\.md$/, '')}`)} class="folder-file-link">
+                                              <span class="file-icon"></span>
+                                              <span class="file-name">{subitem.title}</span>
+                                            </a>
+                                          </li>
+                                        ) : (
+                                          <li class="folder-item folder-category level-1">
+                                            <div class="folder-header">
+                                              <span class="folder-icon"></span>
+                                              <span class="folder-name">{subitem.title}</span>
+                                            </div>
+                                            <ul class="category-items">
+                                              {subitem.children && subitem.children.map(deepitem => (
+                                                <li class="folder-item folder-file level-2">
+                                                  <a href={getBaseUrl(`blog/${category.folder ? `${category.folder}/` : ''}${item.folder}/${subitem.folder}/${deepitem.file.replace(/\.md$/, '')}`)} class="folder-file-link">
+                                                    <span class="file-icon"></span>
+                                                    <span class="file-name">{deepitem.title}</span>
+                                                  </a>
+                                                </li>
+                                              ))}
+                                            </ul>
+                                          </li>
+                                        )}
+                                      </>
+                                    ))}
+                                  </ul>
+                                </li>
+                              )}
+                            </>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p class="single-post">
+                          <a href={getBaseUrl(`blog/${category.file.replace(/\.md$/, '')}`)} class="post-link">
+                            Read post »
+                          </a>
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // Set up sidebar toggle behavior
+  document.addEventListener('DOMContentLoaded', async function() {
+    try {
+      // Show window title bar if Components API is available
+      if (window.Components && window.Components.showWindowTitleBar) {
+        window.Components.showWindowTitleBar();
+      }
+      
+      // Set up sidebar toggle
+      const sidebarToggle = document.querySelector('.sidebar-toggle');
+      const blogContainer = document.querySelector('.blog-container');
+      
+      if (sidebarToggle && blogContainer) {
+        // Check for first visit animation
+        if (localStorage.getItem('blog_visited') !== 'true') {
+          sidebarToggle.classList.add('first-visit');
+          localStorage.setItem('blog_visited', 'true');
+        }
+        
+        // We're on the blogs landing page, so sidebar starts collapsed
+        localStorage.setItem('blogs_home_sidebar_state', 'collapsed');
+        
+        sidebarToggle.addEventListener('click', () => {
+          blogContainer.classList.toggle('sidebar-collapsed');
+          sidebarToggle.classList.toggle('collapsed');
+          
+          // Update sidebar state in localStorage for blogs home page
+          const isCollapsed = blogContainer.classList.contains('sidebar-collapsed');
+          localStorage.setItem('blogs_home_sidebar_state', isCollapsed ? 'collapsed' : 'expanded');
+        });
+      }
+      
+      // Initialize the BlogLoader for sidebar navigation 
+      if (window.BlogLoader) {
+        // Initialize it with modified configuration
+        window.BlogLoader.init({
+          blogDataUrl: '/data/blogs.json',
+          blogTreeContainer: '.blog-tree',
+          sidebarToggle: '.sidebar-toggle',
+          markdownBasePath: '/blogs/',
+          // Custom click handler for tree items to use our pre-rendered pages
+          onItemClick: function(item, event) {
+            if (event) event.preventDefault();
+            
+            if (item && item.type === 'file') {
+              // Build the slug path
+              let slug = item.path.replace(/\.md$/, '');
+              
+              // Navigate to the pre-rendered page
+              window.location.href = `/blog/${slug}`;
+              return true;
+            }
+            return false;
+          }
+        });
+      } else {
+        // If BlogLoader is not available, we'll render a basic tree
+        await renderBasicBlogTree();
+      }
+    } catch (error) {
+      console.error('Error initializing blog interface:', error);
+      const errorContainer = document.getElementById('error-message');
+      if (errorContainer) {
+        errorContainer.innerHTML = `
+          <div class="error-box">
+            Failed to initialize blog interface: ${error.message}
+          </div>
+        `;
+      }
+    }
+  });
+  
+  // Fallback function to render a basic blog tree without the BlogLoader
+  async function renderBasicBlogTree() {
+    try {
+      const response = await fetch('/data/blogs.json');
+      if (!response.ok) throw new Error('Failed to load blog data');
+      
+      const data = await response.json();
+      const treeContainer = document.querySelector('.blog-tree');
+      
+      if (!treeContainer || !data.blogs) return;
+      
+      // Clear loading indicator
+      treeContainer.innerHTML = '';
+      
+      // Create the tree
+      const ul = document.createElement('ul');
+      ul.className = 'blog-tree-list';
+      
+      // Recursive function to render tree items
+      function renderTreeItems(items, parent, path = '') {
+        items.forEach(item => {
+          const li = document.createElement('li');
+          const currentPath = path ? `${path}/${item.folder || item.file}` : (item.folder || item.file);
+          
+          if (item.type === 'folder') {
+            li.className = 'blog-tree-folder';
+            li.innerHTML = `
+              <div class="folder-header">
+                <span class="folder-icon"></span>
+                <span class="folder-name">${item.title}</span>
+              </div>
+            `;
+            
+            if (item.children && item.children.length) {
+              const childUl = document.createElement('ul');
+              childUl.className = 'blog-tree-list';
+              renderTreeItems(item.children, childUl, currentPath);
+              li.appendChild(childUl);
+              
+              // Add click handler to toggle folder
+              const folderHeader = li.querySelector('.folder-header');
+              folderHeader.addEventListener('click', () => {
+                li.classList.toggle('expanded');
+              });
+            }
+          } else {
+            li.className = 'blog-tree-file';
+            const slug = currentPath.replace(/\.md$/, '');
+            li.innerHTML = `
+              <a href="/blog/${slug}" class="file-link">
+                <span class="file-icon"></span>
+                <span class="file-name">${item.title}</span>
+              </a>
+            `;
+          }
+          
+          parent.appendChild(li);
+        });
+      }
+      
+      renderTreeItems(data.blogs, ul);
+      treeContainer.appendChild(ul);
+      
+      // Auto-expand top-level folders
+      const topLevelFolders = treeContainer.querySelectorAll('.blog-tree-list > .blog-tree-folder');
+      topLevelFolders.forEach(folder => {
+        folder.classList.add('expanded');
+      });
+      
+    } catch (error) {
+      console.error('Failed to render basic blog tree:', error);
+      const treeContainer = document.querySelector('.blog-tree');
+      if (treeContainer) {
+        treeContainer.innerHTML = `
+          <div class="error-box">
+            Failed to load blog structure: ${error.message}
+          </div>
+        `;
+      }
+    }
+  }
+</script>
+
+<style>
+  /* Featured posts styles */
+  .featured-posts {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+  }
+  
+  .featured-post {
+    padding: var(--spacing-md);
+    background-color: var(--surface-secondary);
+    border: var(--border-field);
+    box-shadow: var(--border-raised-outer), var(--border-raised-inner);
+  }
+  
+  .featured-post h3 {
+    margin-top: 0;
+    margin-bottom: var(--spacing-sm);
+    font-family: MillenniumBold, serif;
+  }
+  
+  .post-link {
+    color: var(--text-link);
+    text-decoration: underline;
+    font-family: MSSerif, serif;
+  }
+  
+  /* Blog welcome screen styles */
+  .blog-welcome {
+    padding: var(--spacing-lg);
+  }
+  
+  .blog-welcome h1 {
+    margin-bottom: var(--spacing-md);
+    font-family: MillenniumBold, serif;
+  }
+  
+  /* Section titles */
+  .section-title {
+    font-family: MillenniumBold, serif;
+    margin-top: var(--spacing-xl);
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-xs);
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  /* Category cards */
+  .category-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+  }
+  
+  .category-card {
+    padding: var(--spacing-md);
+    background-color: var(--surface);
+    border: var(--border-raised-outer), var(--border-raised-inner);
+    margin-bottom: var(--spacing-md);
+  }
+  
+  .category-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+  }
+  
+  .category-title {
+    margin: 0;
+    font-family: MillenniumBold, serif;
+    font-size: var(--font-size-lg);
+  }
+  
+  .folder-icon {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    background-image: url('/assets/icons/folder.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    margin-right: var(--spacing-sm);
+  }
+  
+  .file-icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    background-image: url('/assets/icons/document.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    margin-right: var(--spacing-sm);
+  }
+  
+  .category-items {
+    list-style-type: none;
+    padding-left: var(--spacing-md);
+    margin: 0;
+  }
+  
+  .folder-item {
+    margin-bottom: var(--spacing-sm);
+  }
+  
+  .folder-file-link {
+    display: flex;
+    align-items: center;
+    color: var(--text-link);
+    text-decoration: none;
+    font-family: MSSerif, serif;
+  }
+  
+  .folder-file-link:hover {
+    text-decoration: underline;
+  }
+  
+  .folder-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--spacing-xs);
+  }
+  
+  .folder-name {
+    font-family: MillenniumBold, serif;
+  }
+  
+  /* Level indentation */
+  .level-1 {
+    margin-left: var(--spacing-md);
+  }
+  
+  .level-2 {
+    margin-left: calc(2 * var(--spacing-md));
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .category-cards {
+      grid-template-columns: 1fr;
+    }
+    
+    .featured-posts {
+      grid-template-columns: 1fr;
+    }
+  }
+</style> 

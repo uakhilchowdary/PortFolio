@@ -1,0 +1,238 @@
+---
+// Base Layout component for Windows 95/98 themed portfolio
+// This maintains the shell of the window UI across all pages
+
+interface Props {
+  title: string;
+  pageName: string;
+  statusText: string;
+  activePage: string;
+  isContentPage?: boolean;
+}
+
+const { title, pageName, statusText, activePage, isContentPage = false } = Astro.props;
+
+// Determine window classes based on page
+const windowClasses = [`window portfolio-window ${isContentPage ? 'content-page-window' : ''}`];
+
+// Import necessary client-side scripts
+---
+
+<!DOCTYPE html>
+<html lang="en" data-page={activePage} class="astro-site">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{title}</title>
+  <!-- Add base path meta tag for GitHub Pages deployment -->
+  <meta name="base-path" content={import.meta.env.BASE_URL}>
+  <!-- Theme preload CSS -->
+  <link rel="stylesheet" href={`${import.meta.env.BASE_URL}styles/theme-preload.css`}>
+  <!-- Theme preload script must be loaded inline for immediate execution -->
+  <script is:inline>
+    // Immediately apply theme from localStorage to prevent flashing
+    (function() {
+        const savedTheme = localStorage.getItem('theme');
+        
+        // If we have a saved preference, use it
+        if (savedTheme === 'dark') {
+            document.documentElement.classList.add('dark-theme');
+            // Create a style element to apply dark-theme to body immediately
+            const style = document.createElement('style');
+            style.textContent = 'body { background-color: var(--dark-bg-color); color: var(--dark-primary-white); }';
+            document.head.appendChild(style);
+        } 
+        // If no saved preference, check system preference
+        else if (savedTheme === null && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark-theme');
+            // Create a style element to apply dark-theme to body immediately
+            const style = document.createElement('style');
+            style.textContent = 'body { background-color: var(--dark-bg-color); color: var(--dark-primary-white); }';
+            document.head.appendChild(style);
+        }
+        
+        // Re-enable transitions after the initial load is complete
+        window.addEventListener('DOMContentLoaded', function() {
+            // Add a slight delay before enabling transitions
+            setTimeout(function() {
+                document.documentElement.classList.add('transitions-enabled');
+            }, 100);
+        });
+    })();
+  </script>
+  
+  <!-- Critical full-screen styling for content pages -->
+  {isContentPage && (
+    <style is:inline>
+      /* Ensure content pages are full screen */
+      .content-page-window {
+          width: 100vw !important;
+          height: 100vh !important;
+          max-width: 100vw !important;
+          max-height: 100vh !important;
+          border-radius: 0 !important;
+      }
+      
+      /* Ensure home page is windowed */
+      body:not(.content-page) .portfolio-window {
+          width: var(--container-width);
+          height: var(--container-height);
+          max-width: var(--container-max-width);
+          max-height: var(--container-max-height);
+          border-radius: 6px;
+      }
+    </style>
+  )}
+  
+  <!-- Font preload -->
+  <link rel="stylesheet" href="https://use.typekit.net/llo2eru.css">
+  <link rel="stylesheet" href={`${import.meta.env.BASE_URL}styles/styles.css`}>
+  <!-- Page-specific CSS -->
+  {activePage === 'blogs' && (
+    <link rel="stylesheet" href={`${import.meta.env.BASE_URL}styles/blog.css`}>
+  )}
+  <!-- EmailJS Library (only load on contact page) -->
+  {activePage === 'contact' && (
+    <script is:inline type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  )}
+  <!-- For blog pages, include marked.js -->
+  {activePage === 'blogs' && (
+    <script is:inline src={`${import.meta.env.BASE_URL}scripts/marked.min.js`}></script>
+  )}
+</head>
+
+<body class={isContentPage ? 'content-page' : ''}>
+  <div class="portfolio-container">
+    <div class={windowClasses.join(' ')}>
+      <!-- Window header with proper structure to match original -->
+      <div class="window-titlebar active">
+        <div class="window-titlebar-icon"></div>
+        <div class="window-titlebar-text">{pageName}</div>
+        <div class="window-controls">
+          <button class="window-control window-minimize">_</button>
+          <button class="window-control window-maximize">□</button>
+          <button class="window-control window-close">×</button>
+        </div>
+      </div>
+      
+      <div class="window-content">
+        <!-- Page content is inserted here -->
+        <slot />
+      </div>
+      
+      <!-- Window statusbar with proper structure to match original -->
+      <div class="window-statusbar">
+        <div>{statusText}</div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Theme switcher component - position fixed in bottom right -->
+  <div class="theme-switch-wrapper">
+    <label class="theme-switch" for="theme-checkbox" title="Toggle Theme">
+      <input type="checkbox" id="theme-checkbox" />
+    </label>
+    <span class="theme-switch-label" id="theme-status">Light</span>
+  </div>
+  
+  <!-- Font preload -->
+  <div class="font_preload">
+    <span class="font-msserif"></span>
+    <span class="font-millennium"></span>
+    <span class="font-millenniumbold"></span>
+    <span class="font-terminal"></span>
+    <span class="font-gastromond"></span>
+  </div>
+  
+  <!-- Core scripts -->
+  <script is:inline src={`${import.meta.env.BASE_URL}scripts/main.js`}></script>
+  <script is:inline src={`${import.meta.env.BASE_URL}scripts/components.js`}></script>
+  
+  <!-- Page specific scripts -->
+  {activePage === 'index' && <script is:inline src={`${import.meta.env.BASE_URL}scripts/home-loader.js`}></script>}
+  {activePage === 'about' && <script is:inline src={`${import.meta.env.BASE_URL}scripts/about-loader.js`}></script>}
+  {activePage === 'experience' && <script is:inline src={`${import.meta.env.BASE_URL}scripts/experience-loader.js`}></script>}
+  {activePage === 'projects' && <script is:inline src={`${import.meta.env.BASE_URL}scripts/projects-loader.js`}></script>}
+  {activePage === 'blogs' && <script is:inline src={`${import.meta.env.BASE_URL}scripts/blog-loader.js`}></script>}
+  {activePage === 'contact' && <script is:inline src={`${import.meta.env.BASE_URL}scripts/contact-form.js`}></script>}
+
+  <!-- Page initialize script (handles transitions and sizing) -->
+  <script is:inline>
+    // Immediate initialization script to ensure proper layout
+    (function() {
+      // Simple check for home vs content page
+      const isHome = window.location.pathname === '/' || 
+                     window.location.pathname === '/index' || 
+                     window.location.pathname === '/index.html';
+      
+      // Apply appropriate classes based on page type
+      const portfolioWindow = document.querySelector('.portfolio-window');
+      if (portfolioWindow) {
+        if (!isHome) {
+          // Content page should be full screen
+          document.body.classList.add('content-page');
+          portfolioWindow.classList.add('content-page-window');
+        } else {
+          // Home page should be windowed
+          document.body.classList.remove('content-page');
+          portfolioWindow.classList.remove('content-page-window');
+        }
+      }
+    })();
+  </script>
+
+  <!-- Astro transition handler script -->
+  {isContentPage && (
+    <script is:inline>
+      // This script ensures titlebar and transitions are properly initialized
+      document.addEventListener('DOMContentLoaded', function() {
+        // Try to initialize titlebar after a small delay to ensure all components are loaded
+        setTimeout(function() {
+          if (typeof setupTitlebarTriggers === 'function') {
+            setupTitlebarTriggers();
+          }
+        }, 100);
+      });
+    </script>
+  )}
+  
+  <!-- Theme script -->
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', function() {
+      const themeCheckbox = document.getElementById('theme-checkbox');
+      const themeLabel = document.getElementById('theme-status');
+      
+      if (!themeCheckbox || !themeLabel) return;
+      
+      // Set initial checkbox state based on current theme
+      const isDarkTheme = document.documentElement.classList.contains('dark-theme');
+      themeCheckbox.checked = isDarkTheme;
+      themeLabel.textContent = isDarkTheme ? 'Dark' : 'Light';
+      
+      // Add first-visit class if it's the user's first visit (for animation)
+      if (localStorage.getItem('theme-visited') !== 'true') {
+        document.querySelector('.theme-switch')?.classList.add('first-visit');
+        localStorage.setItem('theme-visited', 'true');
+      }
+      
+      // Handle theme switch change
+      themeCheckbox.addEventListener('change', function() {
+        const darkMode = this.checked;
+        
+        // Update theme class on root element
+        if (darkMode) {
+          document.documentElement.classList.add('dark-theme');
+        } else {
+          document.documentElement.classList.remove('dark-theme');
+        }
+        
+        // Update label text
+        themeLabel.textContent = darkMode ? 'Dark' : 'Light';
+        
+        // Store preference
+        localStorage.setItem('theme', darkMode ? 'dark' : 'light');
+      });
+    });
+  </script>
+</body>
+</html> 

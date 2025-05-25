@@ -1,0 +1,164 @@
+---
+// Home page for Windows 95/98 portfolio
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+// Import config data from JSON file for better SEO
+import config from '../data/config.json';
+
+const { pageName, statusText, activePage } = config.pages.index;
+const { name, roles } = config.metadata;
+---
+
+<BaseLayout title={pageName} pageName={pageName} statusText={statusText} activePage={activePage} isContentPage={false}>
+  <div class="homepage-container">
+    <div class="profile-heading">
+      <h1 id="profile-name">Loading...<span class="cursor">_</span></h1>
+      <h3 id="role-text">Loading...</h3>
+    </div>
+    
+    <div class="horizontal-nav">
+      <a href="/about">ABOUT</a>
+      <a href="/experience">EXPERIENCE</a>
+      <a href="/projects">PROJECTS</a>
+      <a href="/blogs">BLOG</a>
+      <a href="/contact">CONTACT</a>
+    </div>
+    
+    <div class="copyright-footer">© <span id="current-year">{new Date().getFullYear()}</span></div>
+  </div>
+</BaseLayout>
+
+<script>
+  // Force animation support in Astro
+  document.addEventListener('DOMContentLoaded', function() {
+    // Ensure the window has animation support
+    const portfolioWindow = document.querySelector('.portfolio-window');
+    if (portfolioWindow) {
+      // Add a class to enable animations
+      portfolioWindow.classList.add('animation-enabled');
+      
+      // Force a reflow to ensure animation will work
+      void portfolioWindow.offsetWidth;
+      
+      // Ensure animation transitions work for Astro
+      document.documentElement.classList.add('animation-ready');
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', async function() {
+    try {
+      // Get base path from meta tag
+      const basePath = document.querySelector('meta[name="base-path"]')?.getAttribute('content') || '';
+      
+      // Fetch roles from config.json to ensure we use the latest data
+      const response = await fetch('./data/config.json');
+      const config = await response.json();
+      const roles = config.metadata.roles || [];
+      
+      // Setup role typing animation
+      const roleText = document.getElementById('role-text');
+      let currentRoleIndex = 0;
+      let currentCharIndex = 0;
+      let isDeleting = false;
+      let typingSpeed = 100;
+      
+      // Ensure we have the role element and roles array
+      if(roleText && roles.length > 0) {
+        // Clear loading text
+        roleText.textContent = '';
+        
+        // Start the typing effect
+        function typeRole() {
+          const currentRole = roles[currentRoleIndex];
+          
+          if (isDeleting) {
+            // Deleting text
+            roleText.textContent = currentRole.substring(0, currentCharIndex - 1);
+            currentCharIndex--;
+            typingSpeed = 50; // Faster when deleting
+          } else {
+            // Typing text
+            roleText.textContent = currentRole.substring(0, currentCharIndex + 1);
+            currentCharIndex++;
+            typingSpeed = 100; // Normal typing speed
+          }
+          
+          // If finished typing current role
+          if (!isDeleting && currentCharIndex === currentRole.length) {
+            isDeleting = false;
+            typingSpeed = 2000; // Pause at the end
+            
+            // Start deleting after the pause
+            setTimeout(() => {
+              isDeleting = true;
+            }, typingSpeed);
+            
+            return;
+          }
+          
+          // If finished deleting current role
+          if (isDeleting && currentCharIndex === 0) {
+            isDeleting = false;
+            currentRoleIndex = (currentRoleIndex + 1) % roles.length;
+            return setTimeout(typeRole, 500); // Pause before typing next role
+          }
+          
+          // Continue typing/deleting
+          setTimeout(typeRole, typingSpeed);
+        }
+        
+        // Start the typing animation
+        typeRole();
+      }
+    } catch (error) {
+      console.error('Error loading roles data:', error);
+      // Fallback if JSON load fails
+      document.getElementById('role-text').textContent = 'Developer & Designer';
+    }
+  });
+</script>
+
+<style>
+  /* Add any page-specific styles here */
+  .homepage-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    padding: var(--spacing-xl);
+    text-align: center;
+  }
+  
+  .profile-heading {
+    margin-bottom: var(--spacing-xxl);
+  }
+  
+  .profile-heading h1 {
+    margin-bottom: 0;
+  }
+  
+  .profile-heading h3 {
+    margin-top: var(--spacing-xs);
+  }
+  
+  .cursor {
+    display: inline-block;
+    animation: blink 1s step-end infinite;
+  }
+  
+  @keyframes blink {
+    from, to { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  /* Animation helper classes */
+  :global(.animation-enabled) {
+    transition: none !important;
+  }
+  
+  :global(.animation-ready .zoom-to-fullscreen),
+  :global(.animation-ready .zoom-from-fullscreen) {
+    animation-play-state: running !important;
+  }
+</style> 

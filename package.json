@@ -1,0 +1,22 @@
+{
+  "name": "portfolio-win98-astro",
+  "version": "1.0.0",
+  "description": "Windows 95/98 style portfolio site with Astro",
+  "type": "module",
+  "scripts": {
+    "dev": "node copyDataFiles.js && astro dev",
+    "start": "node copyDataFiles.js && astro dev",
+    "build": "node copyDataFiles.js && astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "copy-data": "node copyDataFiles.js"
+  },
+  "dependencies": {
+    "astro": "^3.4.0",
+    "marked": "^9.1.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.0.3",
+    "prettier-plugin-astro": "^0.12.0"
+  }
+} 
