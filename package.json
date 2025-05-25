@@ -12,11 +12,11 @@
     "copy-data": "node copyDataFiles.js"
   },
   "dependencies": {
+    "astro": "^3.4.0",
     "marked": "^9.1.0"
   },
   "devDependencies": {
-    "astro": "^4.8.0",
     "prettier": "^3.0.3",
     "prettier-plugin-astro": "^0.12.0"
   }
-}
+} 

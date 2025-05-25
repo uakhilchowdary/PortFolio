@@ -18,10 +18,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout your repository
+      - name: Checkout your repository using git
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: 18
@@ -33,10 +33,10 @@ jobs:
       - name: Run copy data script
         run: node copyDataFiles.js
 
-      - name: Build Astro project
-        run: npx astro build
+      - name: Build Astro
+        run: npm run build
 
-      - name: Upload static site artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: github-pages
