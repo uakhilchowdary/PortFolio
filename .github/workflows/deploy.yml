@@ -1,52 +1,34 @@
-name: Deploy to GitHub Pages
+name: Deploy Astro Site
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
-  contents: read
   pages: write
   id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
+  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout your repository using git
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
+      
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: 18
-          registry-url: 'https://registry.npmjs.org'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run copy data script
-        run: node copyDataFiles.js
-
-      - name: Build Astro
-        run: npx astro build
-
-      - name: List build output
-        run: |
-          echo "Build output contents:"
-          ls -la dist/
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+          cache: 'npm'
+          
+      - run: npm ci
+      - run: npm run build
+      
+      - name: Upload Artifact
+        uses: actions/upload-pages-artifact@v2
         with:
-          name: github-pages
           path: dist
-          if-no-files-found: error # This will make the action fail if no files are found
 
   deploy:
     needs: build
@@ -55,17 +37,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: github-pages
-          path: .
-
-      - name: List downloaded files
-        run: |
-          echo "Downloaded files:"
-          ls -la
-
-      - name: Deploy to GitHub Pages
+      - name: Deploy
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v2
