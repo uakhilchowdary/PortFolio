@@ -2,7 +2,7 @@ import { defineConfig } from 'astro/config';
 
 export default defineConfig({
   // Site config - set to your custom domain
-  site: 'akhilchowdary.info',
+  site: 'https://akhilchowdary.info',
   
   // Base path is empty for custom domain
   // base: '/PortFolio',
