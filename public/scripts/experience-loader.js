@@ -4,7 +4,12 @@
 
 class ExperienceLoader {
     constructor() {
-        this.jsonPath = '/data/experience.json';
+        // Get the base path from meta tag if available
+        const basePath = document.querySelector('meta[name="base-path"]')?.getAttribute('content') || '';
+        const origin = window.location.origin;
+        
+        // Use absolute paths from root
+        this.jsonPath = `${origin}${basePath}/data/experience.json`;
         this.experienceData = null;
     }
 
@@ -18,8 +23,8 @@ class ExperienceLoader {
                 window.Components.showWindowTitleBar();
             }
             
-            // Load experience data
-            const response = await fetch('data/experience.json');
+            // Load experience data using the full path
+            const response = await fetch(this.jsonPath);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
