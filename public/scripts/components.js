@@ -31,8 +31,9 @@ async function loadSiteConfig() {
         // Get the base path from meta tag if available
         const basePath = document.querySelector('meta[name="base-path"]')?.getAttribute('content') || '';
         
-        // Use relative path with ./ prefix for better compatibility
-        const response = await fetch('./data/config.json');
+        // Use absolute path from root for better compatibility
+        const configPath = `${window.location.origin}${basePath}/data/config.json`;
+        const response = await fetch(configPath);
         if (!response.ok) {
             throw new Error(`Failed to load config.json: ${response.status}`);
         }
