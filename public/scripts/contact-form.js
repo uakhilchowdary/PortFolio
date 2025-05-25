@@ -17,8 +17,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.Components.showWindowTitleBar();
             }
             
+            // Get the base path from meta tag if available
+            const basePath = document.querySelector('meta[name="base-path"]')?.getAttribute('content') || '';
+            const origin = window.location.origin;
+            
+            // Use absolute path from root
+            const configPath = `${origin}${basePath}/data/contacts.json`;
+            
             // Load config from JSON
-            const response = await fetch('/data/contacts.json');
+            const response = await fetch(configPath);
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
